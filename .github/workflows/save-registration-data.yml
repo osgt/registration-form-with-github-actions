@@ -1,0 +1,40 @@
+name: Save Registration Data
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  save_data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install jq for JSON parsing
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Parse form data from GitHub Actions event payload
+        run: |
+          # Parse form data from JSON payload
+          name=$(echo "${{ github.event.inputs.name }}" | jq -r .)
+          email=$(echo "${{ github.event.inputs.email }}" | jq -r .)
+          bitcoinWallet=$(echo "${{ github.event.inputs.bitcoinWallet }}" | jq -r .)
+
+      - name: Write form data to file
+        run: |
+          # Write form data to file
+          echo "Name: $name" >> registration_data.txt
+          echo "Email: $email" >> registration_data.txt
+          echo "Bitcoin Wallet: $bitcoinWallet" >> registration_data.txt
+
+      - name: Commit and push changes
+        run: |
+          # Commit and push changes
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add registration_data.txt
+          git commit -m "Save registration data"
+          git push origin main
